@@ -151,10 +151,10 @@ module enclosure(boardType = UNO, wall = 3, offset = 3, heightExtension = 10, co
 }
 
 // Enclosure with shiel
-// heightExtension = 10 -> 20
+// heightExtension = 10 -> 5
 
-module shEnclosure(boardType0 = ZERO, boardType1 = BP6A, wall = 3, offset = 3, heightExtension = 5, cornerRadius = 3, mountType = TAPHOLE) {
-  standOffHeight = 5;
+module shEnclosure(boardType0 = ZERO, boardType1 = BP6A, wall = 2.5, offset = 3, heightExtension = 5, cornerRadius = 3, mountType = TAPHOLE) {
+  standOffHeight = 3;
   gap = 3;
   dimensions0 = boardDimensions(boardType0);
   boardDim0 = boardDimensions(boardType0);
@@ -165,7 +165,7 @@ module shEnclosure(boardType0 = ZERO, boardType1 = BP6A, wall = 3, offset = 3, h
   pcbDim1 = pcbDimensions(boardType1);
 
   enclosureWidth = pcbDim1[0] + (wall + offset) * 2;
-  enclosureDepth = pcbDim1[1] + (wall + offset) * 2;
+  enclosureDepth = pcbDim1[1] + (wall + offset)*2;
   enclosureHeight = boardDim0[2]+boardDim1[2] + wall + standOffHeight + heightExtension;
 
   union() {
@@ -180,15 +180,24 @@ module shEnclosure(boardType0 = ZERO, boardType1 = BP6A, wall = 3, offset = 3, h
         //Punch outs for USB and POWER
         // ZERO
         translate([0, 0, standOffHeight]) {
-          components(boardType = boardType0, offset = 1.5, extension = wall + offset + 10);
+          components(boardType = boardType0, offset = 2, extension = wall + offset + 10);
         }
         // BP6A
-        translate([0, 0, boardDim0[2]+pcbDim1[2]]) {
-          components(boardType = boardType1, offset = 2, extension = wall + offset + 10);
+        translate([0, 0, standOffHeight+boardDim0[2]+pcbDim1[2]-2]) {
+          components(boardType = boardType1, offset = 2.5, extension = wall + offset + 10);
         }
-        translate([0, 0, boardDim0[2]+pcbDim1[2]+gap]) {
-          components(boardType = boardType1, offset = 2, extension = wall + offset + 10);
+        // BP6A electrode header
+        translate([0, 0, boardDim0[2]+pcbDim1[2]+standOffHeight]) {
+          components(boardType = boardType1, component = USB_C, offset = 2.5, extension = wall + offset + 10);
+          
         }
+        translate([0, 0, boardDim0[2]+pcbDim1[2]+standOffHeight*3.5]) {
+            components( boardType = boardType1, component = HEADER_M, offset = 2.5, extension = wall + offset + 10);
+            }
+        
+//        translate([0, 0, boardDim0[2]+pcbDim1[2]+gap]) {
+//          components(boardType = boardType1, offset = 2, extension = wall + offset + 10);
+//        }
         
       }
       
@@ -205,7 +214,15 @@ module shEnclosure(boardType0 = ZERO, boardType1 = BP6A, wall = 3, offset = 3, h
           rotate([0, 180, 90]) clipHole(clipHeight = 10, holeDepth = wall + 0.2);
         translate([offset + dimensions0[0], 0, 0])
           rotate([0, 180, 270]) clipHole(clipHeight = 10, holeDepth = wall + 0.2);
-      }   
+      }
+      //
+      holePlacement(boardType = boardType0)
+      cylinder(r =  mountingHoleRadius, h = wall * 8, center = true, $fn=32);
+      
+      holePlacement(boardType = boardType1)
+      cylinder(r =  mountingHoleRadius, h = wall * 8, center = true, $fn=32);
+        
+    //
     }
     translate([0, 0, wall]) {
       standoffs(boardType = boardType0, height = standOffHeight, mountType = mountType);
@@ -217,7 +234,7 @@ module shEnclosure(boardType0 = ZERO, boardType1 = BP6A, wall = 3, offset = 3, h
 }
 
 //Create a snap on lid for enclosure
-module shEnclosureLid( boardType = BP6A, wall = 3, offset = 3, cornerRadius = 3, ventHoles = false) {
+module shEnclosureLid( boardType = BP6A, wall = 2.5, offset = 3, cornerRadius = 3, ventHoles = false) {
   dimensions = boardDimensions(boardType);
   boardDim = boardDimensions(boardType);
   pcbDim = pcbDimensions(boardType);
@@ -232,9 +249,9 @@ module shEnclosureLid( boardType = BP6A, wall = 3, offset = 3, cornerRadius = 3,
       translate([0, 0, -wall * 0.5])
         boundingBox(boardType = boardType, height = wall * 0.5, offset = offset - 0.5, include=PCB, cornerRadius = wall);
         
-      translate([offset, offset, offset]) {
+      translate([wall, wall, wall]) {
             rotate([0, 0, 90]) {
-                linear_extrude(0.5) {
+                linear_extrude(0.2) {
                     text("S1SBP6A_EVK", font="Helvetica", size=5);
                 }
             }
@@ -243,16 +260,16 @@ module shEnclosureLid( boardType = BP6A, wall = 3, offset = 3, cornerRadius = 3,
       //Lid clips
       translate([0, enclosureDepth * 0.75 - (offset + wall), 0]) {
         translate([-offset, 0, 0])
-          rotate([0, 180, 90]) clip(clipHeight = 10);
+          rotate([0, 180, 90]) clip(clipDepth = 3, clipHeight = 10, lipDepth = 0.5);
         translate([offset + boardDim[0], 0, 0])
-          rotate([0, 180, 270]) clip(clipHeight = 10);
+          rotate([0, 180, 270]) clip(clipDepth = 3, clipHeight = 10, lipDepth = 0);
       }
-    
+    //clip(clipWidth = 5, clipDepth = 5, clipHeight = 5, lipDepth = 1.5, lipHeight = 3) {
       translate([0, enclosureDepth * 0.25 - (offset + wall), 0]) {
         translate([-offset, 0, 0])
-          rotate([0, 180, 90]) clip(clipHeight = 10);
+          rotate([0, 180, 90]) clip(clipDepth = 3, clipHeight = 10, lipDepth = 0.5);
         translate([offset + dimensions[0], 0, 0])
-          rotate([0, 180, 270]) clip(clipHeight = 10);
+          rotate([0, 180, 270]) clip(clipDepth = 3, clipHeight = 10, lipDepth = 0);
       }
       
       
@@ -363,9 +380,9 @@ module standoffs(
   holePlacement(boardType = boardType)
     union() {
       difference() {
-        cylinder(r1 = bottomRadius, r2 = topRadius, h = height, $fn=32);
+        cylinder(r1 = bottomRadius, r2 = topRadius, h = height, $fn=10);
         if( mountType == TAPHOLE ) {
-          cylinder(r =  holeRadius, h = height * 4, center = true, $fn=32);
+          cylinder(r =  holeRadius, h = height * 8, center = true, $fn=32);
         }
       }
       if( mountType == PIN ) {
@@ -399,6 +416,7 @@ RJ45 = 4;
 USB_C = 5; // <-------- for bp6a
 PB = 6;
 SW = 7;
+//ELECTRODE_COMP = 8;
 
 module components( boardType = UNO, component = ALL, extension = 0, offset = 0 ) {
   translate([0, 0, pcbHeight]) {
@@ -531,13 +549,13 @@ TRE = 10;
 ETHERNET = 11;
 ZERO = 12; // <-------------------- ZERO
 BP6A = 13; // <-------------------- BP6A
-BP6A_ZERO = 14;
+ELECTRODE = 14;
 
 /********************************** MEASUREMENTS **********************************/
 pcbHeight = 1.7;
 headerWidth = 2.54;
 headerHeight = 9;
-mountingHoleRadius = 3.2 / 2;
+mountingHoleRadius = 2.4 / 2;
 
 mHeaderWidth = 0.7; // <-------------------- BP6A
 mHeaderHeight = 9;  // <-------------------- BP6A
@@ -610,7 +628,8 @@ boardHoles = [
   0,              //Tre
   unoHoles,       //Ethernet
   unoHoles,       // <-------------------- ZERO
-  bp6aHoles       // <-------------------- BP6A
+  bp6aHoles,      // <-------------------- BP6A
+  0
   ];
 
 /********************************** BOARD SHAPES **********************************/
@@ -645,6 +664,8 @@ megaBoardShape = [
   [  1.27, 70.0 ],
   [  0.0, 68.73 ]
   ];
+  
+  electrodeShape=  [[-16,73],[-16,119],[71,119],[71,73]];
 
 boardShapes = [   
   ngBoardShape,   //NG
@@ -660,7 +681,8 @@ boardShapes = [
   0,              //Tre
   ngBoardShape,   //Ethernet
   ngBoardShape,    // <-------------------- ZERO
-  bp6aBoardShape   // <-------------------- BP6A
+  bp6aBoardShape,  // <-------------------- BP6A
+  electrodeShape
   ];  
 
 /*********************************** COMPONENTS ***********************************/
@@ -736,8 +758,8 @@ zeroComponents = [
   [[1.27, 44.45, 0], [headerWidth, headerWidth * 8, headerHeight ], [0, 0, 1], HEADER_F, "Black" ],
   [[49.53, 26.67, 0], [headerWidth, headerWidth * 8, headerHeight ], [0, 0, 1], HEADER_F, "Black" ],
   [[49.53, 49.53, 0], [headerWidth, headerWidth * 6, headerHeight ], [0, 0, 1], HEADER_F, "Black" ],
-  [[11.5, -1.1, 0],[7.5, 5.9, 3],[0, -1, 0], USB, "LightGray" ],
-  [[27, -1.1, 0],[7.5, 5.9, 3],[0, -1, 0], USB, "LightGray" ], //[position, size, rotate, type, "color"]
+  [[11.5, -1.1, 0],[8.5, 5.9, 3.5],[0, -1, 0], USB, "LightGray" ],
+  [[27, -1.1, 0],[8.5, 5.9, 3.5],[0, -1, 0], USB, "LightGray" ], //[position, size, rotate, type, "color"]
   [[40.7, -1.8, 0], [9.0, 13.2, 10.9], [0, -1, 0], POWER, "Black" ]
   ]; // <-------------------- zeroComponents, dueComponents + 1 micro USB port (native, programmable)
 
@@ -757,24 +779,35 @@ bp6aComponents = [
   */
   
   // Electrode male pins
-  [[8.92, 63, 0], [(headerWidth*7)-1.84,(headerWidth*2)-1.84, (headerWidth*2)-0.92], [0, 0, 1], HEADER_F, "LightGray" ],
-  [[31.92, 63, 0],[(headerWidth*6)-1.84,(headerWidth*2)-1.84, (headerWidth*2)-0.92], [0, 0, 1], HEADER_F, "LightGray" ],
-  [[8.92, 63, 0.92], [(headerWidth*7)-1.84,headerHeight*1.5, (headerWidth*2)-1.84], [0, 0, 1], HEADER_F, "LightGray" ],
-  [[31.92, 63, 0.92],[(headerWidth*6)-1.84,headerHeight*1.5, (headerWidth*2)-1.84], [0, 0, 1], HEADER_F, "LightGray" ],
+//  [[8.92, 63, 0], [(headerWidth*7)-1.84,(headerWidth*2)-1.84, (headerWidth*2)-0.92], [0, 0, 1], HEADER_F, "LightGray" ],
+//  [[31.92, 63, 0],[(headerWidth*6)-1.84,(headerWidth*2)-1.84, (headerWidth*2)-0.92], [0, 0, 1], HEADER_F, "LightGray" ],
+//  [[8.92, 63, 0.92], [(headerWidth*7)-1.84,headerHeight*1.5, (headerWidth*2)-1.84], [0, 0, 1], HEADER_F, "LightGray" ],
+//  [[31.92, 63, 0.92],[(headerWidth*6)-1.84,headerHeight*1.5, (headerWidth*2)-1.84], [0, 0, 1], HEADER_F, "LightGray" ],
   
-  [[8, 68, 0], [headerWidth*7,headerHeight*0.33, headerWidth*2], [0, 0, 1], HEADER_F, "Black" ],
-  [[31, 68, 0],[headerWidth*6,headerHeight*0.33, headerWidth*2], [0, 0, 1], HEADER_F, "Black" ],
+  [[8, 64, 0], [headerWidth*15,headerHeight*1.4, headerWidth*2], [0, 1, 0], HEADER_M, "LightGray" ],
+//  [[31, 68, 0],[headerWidth*6,headerHeight*0.33, headerWidth*2], [0, 0, 1], HEADER_F, "Black" ],
   
   // switches, buttons
-  [[21, 1, 0], [3,9,6], [0, 0, 1], SW, "LightGray" ], // [3,9,4] [3,9,6]
-  [[45, 16.5, 0], [9,9,5], [0, 0, 1], SW, "LightGray" ], //[4,9,5][9,9,5]
+  [[21, 1, 0], [3,9,4], [0, 0, 1], SW, "LightGray" ], // [3,9,4] [3,9,6]
+  [[45, 16.5, 0], [4,9,5], [0, 0, 1], SW, "LightGray" ], //[4,9,5][9,9,5]
   [[1.27, 2.5, 0], [3,6,1], [0, 0, 1], PB, "LightGray" ], // RST
   [[29.5, 2.5, 0], [3,6,1], [0, 0, 1], PB, "LightGray" ], // BTMODE
   [[48.5, 2.5, 0], [3,6,1], [0, 0, 1], PB, "LightGray" ], // BP+RST
   
   // usb type-c
-  [[8, -0.5, 0],[9, 7, 3.5],[0, -1, 0], USB_C, "LightGray" ]
-  ]; // <--------------------
+  [[8, -0.5, 0],[9, 7, 3.5],[0, -1, 0], USB_C, "LightGray" ],
+  
+  ];
+electrodeComponents = [
+
+    // header
+    [[7, 70, 0],[headerWidth*15 +2,headerHeight*1.4, headerWidth*2+2], [0, 1, 0], HEADER_F,  "Black" ],
+    
+    //electrode
+    //[[-16, 65, -2],[85,54, 2], [0, 0, 1], ELECTRODE_COMP,  "Black" ]
+    ];
+
+
 
 components = [
   ngComponents,         //NG
@@ -791,6 +824,7 @@ components = [
   etherComponents,      //Ethernet
   zeroComponents, // <-------------------- ZERO
   bp6aComponents, // <-------------------- BP6A
+  electrodeComponents
   ];
 
 
