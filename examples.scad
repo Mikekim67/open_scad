@@ -14,6 +14,14 @@ translate([0, 0,-70])
     shEnclosure();
 translate([0, 0,70])
     shEnclosureLid();
+    
+ translate([0, 0,0])
+    arduino(ZERO);
+ translate([0, 0,12]){
+    arduino(BP6A);
+    arduino(ELECTRODE);
+     }   
+    
 
  translate([-100, 0,0])
     arduino(ZERO);
@@ -23,7 +31,8 @@ translate([0, 0,70])
      }
     
 translate([-100, 0,-6])
-color([0.5, 0.5, 0.5, 0.7]){shEnclosure();}
+color([0.5, 0.5, 0.5, 0.8]){shEnclosure();}
 
 translate([-100, 0,50])
-color([0.5, 0.5, 0.5, 0.7]){shEnclosureLid();}
+color([0.5, 0.5, 0.5, 0.8]){shEnclosureLid();}
+

@@ -248,14 +248,13 @@ module shEnclosureLid( boardType = BP6A, wall = 2.5, offset = 3, cornerRadius = 
 
       translate([0, 0, -wall * 0.5])
         boundingBox(boardType = boardType, height = wall * 0.5, offset = offset - 0.5, include=PCB, cornerRadius = wall);
-        
-      translate([wall, wall, wall]) {
-            rotate([0, 0, 90]) {
-                linear_extrude(0.2) {
-                    text("S1SBP6A_EVK", font="Helvetica", size=5);
-                }
-            }
-        }
+      
+      
+    }
+     translate([wall+25, wall, wall-0.5]){ // 위치 조정
+        linear_extrude(height=1) // 텍스트를 3D로 생성
+            rotate([180, 180, 0]) text("S1SBP6A_EVK", size=5, font="Arial", valign="center", halign="center");}
+}
         
       //Lid clips
       translate([0, enclosureDepth * 0.75 - (offset + wall), 0]) {
@@ -275,14 +274,14 @@ module shEnclosureLid( boardType = BP6A, wall = 2.5, offset = 3, cornerRadius = 
       
 
     }
-  }
-}
+  
+
 
 
 
 
 //Create a snap on lid for enclosure
-module enclosureLid( boardType = UNO, wall = 3, offset = 3, cornerRadius = 3, ventHoles = false) {
+module enclosureLid( boardType = UNO, wall = 2.5, offset = 3, cornerRadius = 3, ventHoles = false) {
   dimensions = boardDimensions(boardType);
   boardDim = boardDimensions(boardType);
   pcbDim = pcbDimensions(boardType);
@@ -291,11 +290,16 @@ module enclosureLid( boardType = UNO, wall = 3, offset = 3, cornerRadius = 3, ve
   enclosureDepth = pcbDim[1] + (wall + offset) * 2;
 
   difference() {
+ 
     union() {
       boundingBox(boardType = boardType, height = wall, offset = wall + offset, include=PCB, cornerRadius = wall);
-
+    
+        
+        
       translate([0, 0, -wall * 0.5])
         boundingBox(boardType = boardType, height = wall * 0.5, offset = offset - 0.5, include=PCB, cornerRadius = wall);
+    }
+        
     
       //Lid clips
       translate([0, enclosureDepth * 0.75 - (offset + wall), 0]) {
@@ -313,8 +317,11 @@ module enclosureLid( boardType = UNO, wall = 3, offset = 3, cornerRadius = 3, ve
       }
 
     }
+   
   }
-}
+  
+  
+
 
 //Offset from board. Negative values are insets
 module boardShape( boardType = UNO, offset = 0, height = pcbHeight ) {
@@ -555,7 +562,7 @@ ELECTRODE = 14;
 pcbHeight = 1.7;
 headerWidth = 2.54;
 headerHeight = 9;
-mountingHoleRadius = 2.4 / 2;
+mountingHoleRadius = 2.9 / 2;
 
 mHeaderWidth = 0.7; // <-------------------- BP6A
 mHeaderHeight = 9;  // <-------------------- BP6A
